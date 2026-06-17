@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { Text, Card, Title, Paragraph, Chip, useTheme, ActivityIndicator } from 'react-native-paper';
-import { bookingsApi } from '../../api';
-import { useAuth } from '../../context/AuthContext';
+import { Text, Card, Title, Paragraph, Chip, ActivityIndicator } from 'react-native-paper';
+import { bookingsApi, professionalsApi } from '../../api';
 import { Booking } from '../../types';
 
 const STATUS_CFG: Record<string, { label: string; color: string }> = {
@@ -14,15 +13,14 @@ const STATUS_CFG: Record<string, { label: string; color: string }> = {
 };
 
 export default function ProfessionalBookings() {
-  const { userId } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchBookings = useCallback(async () => {
-    if (!userId) return;
     try {
-      const data = await bookingsApi.byProfessional(userId);
+      const professional = await professionalsApi.me();
+      const data = await bookingsApi.byProfessional(professional.id);
       setBookings(data.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()));
     } catch (err) {
       console.error(err);
@@ -30,7 +28,7 @@ export default function ProfessionalBookings() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchBookings();

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AuthResponse, Role } from '../types';
+import { addUnauthorizedListener } from '../api';
 
 interface AuthContextType {
   token: string | null;
@@ -32,6 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role,      setRole]      = useState<Role | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const clearAuthState = useCallback(() => {
+    setToken(null);
+    setUserId(null);
+    setUserName(null);
+    setUserEmail(null);
+    setRole(null);
+  }, []);
+
   useEffect(() => {
     async function loadStorage() {
       try {
@@ -51,6 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     loadStorage();
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = addUnauthorizedListener(clearAuthState);
+    return () => {
+      unsubscribe();
+    };
+  }, [clearAuthState]);
 
   const login = useCallback(async (data: AuthResponse) => {
     try {
@@ -74,15 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await AsyncStorage.multiRemove(Object.values(KEYS));
-      setToken(null);
-      setUserId(null);
-      setUserName(null);
-      setUserEmail(null);
-      setRole(null);
+      clearAuthState();
     } catch (err) {
       console.error('Error clearing auth state', err);
     }
-  }, []);
+  }, [clearAuthState]);
 
   return (
     <AuthContext.Provider value={{

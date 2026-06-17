@@ -16,6 +16,11 @@ export default function ProfessionalProfile() {
     baseRate: '',
     coverageRadiusKm: '',
   });
+  const [errors, setErrors] = useState({
+    specialty: '',
+    baseRate: '',
+    coverageRadiusKm: '',
+  });
 
   useEffect(() => {
     fetchProfile();
@@ -39,13 +44,27 @@ export default function ProfessionalProfile() {
   };
 
   const handleSave = async () => {
+    const baseRate = Number(form.baseRate);
+    const coverageRadiusKm = Number(form.coverageRadiusKm);
+    const nextErrors = {
+      specialty: form.specialty.trim() ? '' : 'Ingresa una especialidad.',
+      baseRate: Number.isFinite(baseRate) && baseRate > 0 ? '' : 'Ingresa una tarifa valida mayor a 0.',
+      coverageRadiusKm:
+        Number.isFinite(coverageRadiusKm) && coverageRadiusKm > 0
+          ? ''
+          : 'Ingresa un radio de cobertura valido mayor a 0.',
+    };
+
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+
     try {
       setLoading(true);
       const updated = await professionalsApi.updateProfile({
-        specialty: form.specialty,
-        description: form.description,
-        baseRate: Number(form.baseRate),
-        coverageRadiusKm: Number(form.coverageRadiusKm),
+        specialty: form.specialty.trim(),
+        description: form.description.trim(),
+        baseRate,
+        coverageRadiusKm,
       });
       setProfile(updated);
       setEditing(false);
@@ -85,6 +104,10 @@ export default function ProfessionalProfile() {
                 <Text style={styles.value}>S/ {profile?.baseRate || '0.00'}</Text>
               </View>
               <View style={styles.field}>
+                <Text style={styles.label}>Radio de cobertura</Text>
+                <Text style={styles.value}>{profile?.coverageRadiusKm || 0} km</Text>
+              </View>
+              <View style={styles.field}>
                 <Text style={styles.label}>Descripción</Text>
                 <Text style={styles.value}>{profile?.description || 'Sin descripción'}</Text>
               </View>
@@ -97,18 +120,47 @@ export default function ProfessionalProfile() {
               <TextInput
                 label="Especialidad"
                 value={form.specialty}
-                onChangeText={v => setForm(f => ({ ...f, specialty: v }))}
+                onChangeText={v => {
+                  setForm(f => ({ ...f, specialty: v }));
+                  setErrors(e => ({ ...e, specialty: '' }));
+                }}
                 mode="outlined"
                 style={styles.input}
+                error={!!errors.specialty}
               />
+              <HelperText type="error" visible={!!errors.specialty}>
+                {errors.specialty}
+              </HelperText>
               <TextInput
                 label="Tarifa Base (S/)"
                 value={form.baseRate}
-                onChangeText={v => setForm(f => ({ ...f, baseRate: v }))}
+                onChangeText={v => {
+                  setForm(f => ({ ...f, baseRate: v }));
+                  setErrors(e => ({ ...e, baseRate: '' }));
+                }}
                 mode="outlined"
                 keyboardType="numeric"
                 style={styles.input}
+                error={!!errors.baseRate}
               />
+              <HelperText type="error" visible={!!errors.baseRate}>
+                {errors.baseRate}
+              </HelperText>
+              <TextInput
+                label="Radio de cobertura (km)"
+                value={form.coverageRadiusKm}
+                onChangeText={v => {
+                  setForm(f => ({ ...f, coverageRadiusKm: v }));
+                  setErrors(e => ({ ...e, coverageRadiusKm: '' }));
+                }}
+                mode="outlined"
+                keyboardType="numeric"
+                style={styles.input}
+                error={!!errors.coverageRadiusKm}
+              />
+              <HelperText type="error" visible={!!errors.coverageRadiusKm}>
+                {errors.coverageRadiusKm}
+              </HelperText>
               <TextInput
                 label="Descripción"
                 value={form.description}
@@ -122,7 +174,14 @@ export default function ProfessionalProfile() {
                 <Button mode="contained" onPress={handleSave} style={[styles.button, { flex: 1, marginRight: 8 }]}>
                   Guardar
                 </Button>
-                <Button mode="outlined" onPress={() => setEditing(false)} style={[styles.button, { flex: 1 }]}>
+                <Button
+                  mode="outlined"
+                  onPress={() => {
+                    setErrors({ specialty: '', baseRate: '', coverageRadiusKm: '' });
+                    setEditing(false);
+                  }}
+                  style={[styles.button, { flex: 1 }]}
+                >
                   Cancelar
                 </Button>
               </View>

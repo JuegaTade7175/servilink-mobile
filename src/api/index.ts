@@ -16,6 +16,14 @@ const api = axios.create({
   baseURL,
 });
 
+const AUTH_KEYS = ['sl_token', 'sl_userId', 'sl_name', 'sl_email', 'sl_role'];
+const unauthorizedListeners = new Set<() => void>();
+
+export function addUnauthorizedListener(listener: () => void) {
+  unauthorizedListeners.add(listener);
+  return () => unauthorizedListeners.delete(listener);
+}
+
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('sl_token');
   if (token) {
@@ -28,10 +36,8 @@ api.interceptors.response.use(
   (res) => res,
   async (err) => {
     if (err.response?.status === 401) {
-      const keys = ['sl_token', 'sl_userId', 'sl_name', 'sl_email', 'sl_role'];
-      await AsyncStorage.multiRemove(keys);
-      // En móvil no podemos usar window.location.reload()
-      // La lógica de redirección al login debería manejarse en el AuthContext o Navigation
+      await AsyncStorage.multiRemove(AUTH_KEYS);
+      unauthorizedListeners.forEach((listener) => listener());
     }
     const msg =
       err.response?.data?.message ?? err.message ?? 'Error del servidor';

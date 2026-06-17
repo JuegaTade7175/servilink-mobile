@@ -1,31 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, StyleSheet, FlatList, RefreshControl, Alert } from 'react-native';
 import { Text, Card, Title, Paragraph, Avatar, Button, ActivityIndicator, Searchbar } from 'react-native-paper';
+import * as Location from 'expo-location';
 import { professionalsApi } from '../../api';
 import { Professional } from '../../types';
+
+const LIMA_FALLBACK = {
+  latitude: -12.0464,
+  longitude: -77.0428,
+  label: 'Usando ubicación referencial de Lima. Activa permisos de ubicación para ver resultados cercanos a ti.',
+};
 
 export default function ClientProfessionalList() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [locationMessage, setLocationMessage] = useState<string | null>(null);
 
-  const fetchProfessionals = async () => {
+  const resolveLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+
+    if (status !== Location.PermissionStatus.GRANTED) {
+      setLocationMessage(LIMA_FALLBACK.label);
+      return LIMA_FALLBACK;
+    }
+
+    const current = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+    setLocationMessage(null);
+
+    return {
+      latitude: current.coords.latitude,
+      longitude: current.coords.longitude,
+    };
+  };
+
+  const fetchProfessionals = useCallback(async () => {
     try {
-      // Coordenadas de prueba (Lima)
-      const data = await professionalsApi.nearby(-12.0464, -77.0428, 50);
+      const location = await resolveLocation();
+      const data = await professionalsApi.nearby(location.latitude, location.longitude, 50);
       setProfessionals(data);
     } catch (err) {
       console.error(err);
+      setLocationMessage(LIMA_FALLBACK.label);
+      const data = await professionalsApi.nearby(LIMA_FALLBACK.latitude, LIMA_FALLBACK.longitude, 50);
+      setProfessionals(data);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProfessionals();
-  }, []);
+  }, [fetchProfessionals]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -52,8 +82,12 @@ export default function ClientProfessionalList() {
         </View>
       </Card.Content>
       <Card.Actions>
-        <Button onPress={() => {}}>Ver Perfil</Button>
-        <Button mode="contained" onPress={() => {}}>Reservar</Button>
+        <Button onPress={() => Alert.alert('Perfil', `Detalle pendiente para ${item.userName}.`)}>
+          Ver Perfil
+        </Button>
+        <Button mode="contained" onPress={() => Alert.alert('Reserva', 'La pantalla de creación de reservas aún no está implementada.')}>
+          Reservar
+        </Button>
       </Card.Actions>
     </Card>
   );
@@ -66,6 +100,9 @@ export default function ClientProfessionalList() {
         value={search}
         style={styles.searchbar}
       />
+      {locationMessage ? (
+        <Text style={styles.locationMessage}>{locationMessage}</Text>
+      ) : null}
       {loading && !refreshing ? (
         <ActivityIndicator size="large" style={styles.centered} />
       ) : (
@@ -94,6 +131,12 @@ const styles = StyleSheet.create({
   searchbar: {
     margin: 16,
     elevation: 2,
+  },
+  locationMessage: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    color: '#666',
+    fontSize: 12,
   },
   list: {
     paddingHorizontal: 16,
