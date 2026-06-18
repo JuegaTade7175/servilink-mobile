@@ -1,14 +1,18 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl, Alert } from 'react-native';
-import { Text, Card, Title, Paragraph, Avatar, Button, ActivityIndicator, Searchbar } from 'react-native-paper';
+import {
+  View, StyleSheet, FlatList, RefreshControl,
+  Text, TouchableOpacity, Modal, ActivityIndicator,
+} from 'react-native';
+import { Avatar, Button, Card, Paragraph, Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
 import { professionalsApi } from '../../api';
-import { Professional } from '../../types';
+import type { Professional } from '../../types';
+import AvailabilityScreen from '../Shared/AvailabilityScreen';
 
 const LIMA_FALLBACK = {
-  latitude: -12.0464,
+  latitude:  -12.0464,
   longitude: -77.0428,
-  label: 'Usando ubicación referencial de Lima. Activa permisos de ubicación para ver resultados cercanos a ti.',
+  label: 'Usando Lima como referencia. Activa permisos de ubicación para ver resultados cercanos.',
 };
 
 export default function ClientProfessionalList() {
@@ -17,104 +21,131 @@ export default function ClientProfessionalList() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [viewingAvail, setViewingAvail] = useState<{ id: number; name: string } | null>(null);
 
   const resolveLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-
-    if (status !== Location.PermissionStatus.GRANTED) {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== Location.PermissionStatus.GRANTED) {
+        setLocationMessage(LIMA_FALLBACK.label);
+        return LIMA_FALLBACK;
+      }
+      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setLocationMessage(null);
+      return { latitude: current.coords.latitude, longitude: current.coords.longitude };
+    } catch {
       setLocationMessage(LIMA_FALLBACK.label);
       return LIMA_FALLBACK;
     }
-
-    const current = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-    setLocationMessage(null);
-
-    return {
-      latitude: current.coords.latitude,
-      longitude: current.coords.longitude,
-    };
   };
 
-  const fetchProfessionals = useCallback(async () => {
+  const fetchProfessionals = useCallback(async (refresh = false) => {
+    if (refresh) setRefreshing(true);
     try {
-      const location = await resolveLocation();
-      const data = await professionalsApi.nearby(location.latitude, location.longitude, 50);
+      const loc = await resolveLocation();
+      const data = await professionalsApi.nearby(loc.latitude, loc.longitude, 50);
       setProfessionals(data);
-    } catch (err) {
-      console.error(err);
-      setLocationMessage(LIMA_FALLBACK.label);
-      const data = await professionalsApi.nearby(LIMA_FALLBACK.latitude, LIMA_FALLBACK.longitude, 50);
-      setProfessionals(data);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    } catch {
+      try {
+        const data = await professionalsApi.nearby(LIMA_FALLBACK.latitude, LIMA_FALLBACK.longitude, 50);
+        setProfessionals(data);
+      } catch {}
     }
+    setLoading(false);
+    setRefreshing(false);
   }, []);
 
-  useEffect(() => {
-    fetchProfessionals();
-  }, [fetchProfessionals]);
+  useEffect(() => { fetchProfessionals(); }, [fetchProfessionals]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchProfessionals();
-  };
-
-  const filtered = professionals.filter(p => 
+  const filtered = professionals.filter(p =>
     p.userName.toLowerCase().includes(search.toLowerCase()) ||
     p.specialty.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (viewingAvail) {
+    return (
+      <AvailabilityScreen
+        professionalId={viewingAvail.id}
+        professionalName={viewingAvail.name}
+        isOwner={false}
+        onBack={() => setViewingAvail(null)}
+      />
+    );
+  }
+
   const renderItem = ({ item }: { item: Professional }) => (
-    <Card style={styles.card}>
+    <Card style={s.card} elevation={3}>
       <Card.Title
         title={item.userName}
         subtitle={item.specialty}
-        left={(props) => <Avatar.Text {...props} label={item.userName[0]} />}
+        left={props => <Avatar.Text {...props} label={item.userName.slice(0, 2).toUpperCase()} />}
+        right={() =>
+          item.isVerified
+            ? <Text style={s.verified}>✓ Verificado</Text>
+            : null
+        }
       />
       <Card.Content>
-        <Paragraph numberOfLines={2}>{item.description || 'Sin descripción'}</Paragraph>
-        <View style={styles.infoRow}>
-          <Text style={styles.price}>S/ {item.baseRate}/hr</Text>
-          <Text style={styles.rating}>★ {item.averageRating.toFixed(1)} ({item.totalReviews})</Text>
+        <Paragraph numberOfLines={2} style={s.desc}>
+          {item.description || 'Sin descripción'}
+        </Paragraph>
+        <View style={s.metaRow}>
+          <Text style={s.price}>S/. {item.baseRate}/hr</Text>
+          <Text style={s.rating}>★ {(item.averageRating ?? 0).toFixed(1)} ({item.totalReviews})</Text>
+          {item.distanceKm != null && (
+            <Text style={s.dist}>📍 {item.distanceKm.toFixed(1)} km</Text>
+          )}
         </View>
+        {item.services.length > 0 && (
+          <View style={s.tagsRow}>
+            {item.services.slice(0, 3).map(sv => (
+              <View key={sv.id} style={s.tag}>
+                <Text style={s.tagText}>{sv.name}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </Card.Content>
       <Card.Actions>
-        <Button onPress={() => Alert.alert('Perfil', `Detalle pendiente para ${item.userName}.`)}>
-          Ver Perfil
-        </Button>
-        <Button mode="contained" onPress={() => Alert.alert('Reserva', 'La pantalla de creación de reservas aún no está implementada.')}>
-          Reservar
+        <Button
+          mode="outlined"
+          onPress={() => setViewingAvail({ id: item.id, name: item.userName })}
+          style={s.availBtn}
+          labelStyle={s.availLabel}
+        >
+          📅 Ver horarios
         </Button>
       </Card.Actions>
     </Card>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={s.container}>
       <Searchbar
         placeholder="Buscar especialidad o nombre"
         onChangeText={setSearch}
         value={search}
-        style={styles.searchbar}
+        style={s.searchbar}
+        inputStyle={{ fontSize: 14 }}
       />
-      {locationMessage ? (
-        <Text style={styles.locationMessage}>{locationMessage}</Text>
-      ) : null}
+      {locationMessage && <Text style={s.locationMsg}>{locationMessage}</Text>}
+
       {loading && !refreshing ? (
-        <ActivityIndicator size="large" style={styles.centered} />
+        <View style={s.centered}>
+          <ActivityIndicator size="large" color="#6c63ff" />
+          <Text style={s.loadingText}>Buscando profesionales...</Text>
+        </View>
       ) : (
         <FlatList
           data={filtered}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={item => String(item.id)}
           renderItem={renderItem}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchProfessionals(true)} />}
+          contentContainerStyle={s.list}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text>No se encontraron profesionales cercanos</Text>
+            <View style={s.centered}>
+              <Text style={s.emptyIcon}>🔍</Text>
+              <Text style={s.emptyText}>No se encontraron profesionales</Text>
             </View>
           }
         />
@@ -123,48 +154,29 @@ export default function ClientProfessionalList() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  searchbar: { margin: 12, elevation: 2, borderRadius: 12 },
+  locationMsg: { marginHorizontal: 16, marginBottom: 8, color: '#6b7280', fontSize: 12 },
+  list: { paddingHorizontal: 16, paddingBottom: 20, gap: 14 },
+  card: { borderRadius: 14, backgroundColor: '#fff' },
+  desc: { color: '#6b7280', fontSize: 13, marginBottom: 8 },
+  metaRow: { flexDirection: 'row', gap: 14, alignItems: 'center', marginBottom: 8 },
+  price:   { fontWeight: '700', color: '#6c63ff', fontSize: 14 },
+  rating:  { color: '#f59e0b', fontSize: 13 },
+  dist:    { color: '#6b7280', fontSize: 12 },
+  verified:{ color: '#10b981', fontWeight: '700', fontSize: 12, marginRight: 12 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tag: {
+    backgroundColor: '#f3f4f6', borderRadius: 12,
+    paddingHorizontal: 10, paddingVertical: 4,
+    borderWidth: 1, borderColor: '#e5e7eb',
   },
-  searchbar: {
-    margin: 16,
-    elevation: 2,
-  },
-  locationMessage: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-    color: '#666',
-    fontSize: 12,
-  },
-  list: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  card: {
-    marginBottom: 16,
-    elevation: 4,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  price: {
-    fontWeight: 'bold',
-    color: '#6c63ff',
-  },
-  rating: {
-    color: '#f1c40f',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  empty: {
-    alignItems: 'center',
-    marginTop: 50,
-  },
+  tagText: { fontSize: 11, color: '#6b7280' },
+  availBtn: { borderColor: '#6c63ff', borderRadius: 8 },
+  availLabel: { color: '#6c63ff', fontSize: 12 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60, gap: 10 },
+  loadingText: { color: '#6b7280', fontSize: 14 },
+  emptyIcon: { fontSize: 44 },
+  emptyText: { fontSize: 14, color: '#6b7280' },
 });
