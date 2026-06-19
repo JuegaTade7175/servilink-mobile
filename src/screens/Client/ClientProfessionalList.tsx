@@ -1,13 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View, StyleSheet, FlatList, RefreshControl,
-  Text, TouchableOpacity, Modal, ActivityIndicator,
+  Text, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
-import { Avatar, Button, Card, Paragraph, Searchbar } from 'react-native-paper';
+import { Avatar, Card, Paragraph, Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
 import { professionalsApi } from '../../api';
-import type { Professional } from '../../types';
+import type { Professional, Booking } from '../../types';
 import AvailabilityScreen from '../Shared/AvailabilityScreen';
+import BookingWizard from '../Shared/BookingWizard';
+import BookingDetailScreen from '../Shared/BookingDetailScreen';
 
 const LIMA_FALLBACK = {
   latitude:  -12.0464,
@@ -21,7 +23,12 @@ export default function ClientProfessionalList() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+
+  // Sub-screen state
   const [viewingAvail, setViewingAvail] = useState<{ id: number; name: string } | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardPro, setWizardPro] = useState<Professional | null>(null);
+  const [createdBooking, setCreatedBooking] = useState<Booking | null>(null);
 
   const resolveLocation = async () => {
     try {
@@ -62,6 +69,7 @@ export default function ClientProfessionalList() {
     p.specialty.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Sub-screens
   if (viewingAvail) {
     return (
       <AvailabilityScreen
@@ -72,6 +80,21 @@ export default function ClientProfessionalList() {
       />
     );
   }
+
+  if (createdBooking) {
+    return (
+      <BookingDetailScreen
+        booking={createdBooking}
+        onBack={() => setCreatedBooking(null)}
+        onUpdated={updated => setCreatedBooking(updated)}
+      />
+    );
+  }
+
+  const handleReservar = (pro: Professional) => {
+    setWizardPro(pro);
+    setShowWizard(true);
+  };
 
   const renderItem = ({ item }: { item: Professional }) => (
     <Card style={s.card} elevation={3}>
@@ -106,15 +129,19 @@ export default function ClientProfessionalList() {
           </View>
         )}
       </Card.Content>
-      <Card.Actions>
-        <Button
-          mode="outlined"
-          onPress={() => setViewingAvail({ id: item.id, name: item.userName })}
+      <Card.Actions style={s.actions}>
+        <TouchableOpacity
           style={s.availBtn}
-          labelStyle={s.availLabel}
+          onPress={() => setViewingAvail({ id: item.id, name: item.userName })}
         >
-          📅 Ver horarios
-        </Button>
+          <Text style={s.availLabel}>📅 Ver horarios</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={s.reservarBtn}
+          onPress={() => handleReservar(item)}
+        >
+          <Text style={s.reservarLabel}>＋ Reservar</Text>
+        </TouchableOpacity>
       </Card.Actions>
     </Card>
   );
@@ -150,6 +177,18 @@ export default function ClientProfessionalList() {
           }
         />
       )}
+
+      {/* Booking wizard — pre-selects the professional */}
+      <BookingWizard
+        visible={showWizard}
+        onClose={() => { setShowWizard(false); setWizardPro(null); }}
+        onCreated={b => {
+          setShowWizard(false);
+          setWizardPro(null);
+          setCreatedBooking(b);
+        }}
+        initialProfessional={wizardPro ?? undefined}
+      />
     </View>
   );
 }
@@ -162,19 +201,28 @@ const s = StyleSheet.create({
   card: { borderRadius: 14, backgroundColor: '#fff' },
   desc: { color: '#6b7280', fontSize: 13, marginBottom: 8 },
   metaRow: { flexDirection: 'row', gap: 14, alignItems: 'center', marginBottom: 8 },
-  price:   { fontWeight: '700', color: '#6c63ff', fontSize: 14 },
-  rating:  { color: '#f59e0b', fontSize: 13 },
-  dist:    { color: '#6b7280', fontSize: 12 },
-  verified:{ color: '#10b981', fontWeight: '700', fontSize: 12, marginRight: 12 },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  price:    { fontWeight: '700', color: '#6c63ff', fontSize: 14 },
+  rating:   { color: '#f59e0b', fontSize: 13 },
+  dist:     { color: '#6b7280', fontSize: 12 },
+  verified: { color: '#10b981', fontWeight: '700', fontSize: 12, marginRight: 12 },
+  tagsRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tag: {
     backgroundColor: '#f3f4f6', borderRadius: 12,
     paddingHorizontal: 10, paddingVertical: 4,
     borderWidth: 1, borderColor: '#e5e7eb',
   },
   tagText: { fontSize: 11, color: '#6b7280' },
-  availBtn: { borderColor: '#6c63ff', borderRadius: 8 },
-  availLabel: { color: '#6c63ff', fontSize: 12 },
+  actions: { gap: 8, paddingHorizontal: 8, paddingBottom: 8 },
+  availBtn: {
+    flex: 1, paddingVertical: 8, borderRadius: 8,
+    borderWidth: 1, borderColor: '#6c63ff', alignItems: 'center',
+  },
+  availLabel: { color: '#6c63ff', fontSize: 12, fontWeight: '600' },
+  reservarBtn: {
+    flex: 1, paddingVertical: 8, borderRadius: 8,
+    backgroundColor: '#6c63ff', alignItems: 'center',
+  },
+  reservarLabel: { color: '#fff', fontSize: 12, fontWeight: '700' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60, gap: 10 },
   loadingText: { color: '#6b7280', fontSize: 14 },
   emptyIcon: { fontSize: 44 },

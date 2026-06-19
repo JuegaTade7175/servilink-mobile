@@ -10,6 +10,8 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onCreated: (b: Booking) => void;
+  /** Pre-select a professional and skip straight to service step */
+  initialProfessional?: Professional;
 }
 
 type Step = 'pro' | 'service' | 'details';
@@ -29,7 +31,7 @@ const av = StyleSheet.create({
   text: { color: '#fff', fontWeight: '800', fontSize: 14 },
 });
 
-export default function BookingWizard({ visible, onClose, onCreated }: Props) {
+export default function BookingWizard({ visible, onClose, onCreated, initialProfessional }: Props) {
   const [step, setStep] = useState<Step>('pro');
   const [pros, setPros] = useState<Professional[]>([]);
   const [pro, setPro] = useState<Professional | null>(null);
@@ -39,20 +41,30 @@ export default function BookingWizard({ visible, onClose, onCreated }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState('');
   const [form, setForm] = useState({ scheduledAt: '', address: '', description: '' });
-
-  // Minimal datetime: ISO string builder via simple inputs
-  const [dateStr, setDateStr] = useState(''); // YYYY-MM-DD
-  const [timeStr, setTimeStr] = useState(''); // HH:MM
+  const [dateStr, setDateStr] = useState('');
+  const [timeStr, setTimeStr] = useState('');
 
   useEffect(() => {
     if (!visible) return;
-    setStep('pro'); setPro(null); setSvc(null); setErr('');
-    setSearch(''); setForm({ scheduledAt: '', address: '', description: '' });
-    setDateStr(''); setTimeStr('');
-    setLoadingPros(true);
-    professionalsApi.nearby(-12.0464, -77.0428, 30)
-      .then(setPros).catch(() => {}).finally(() => setLoadingPros(false));
-  }, [visible]);
+    setErr('');
+    setSearch('');
+    setForm({ scheduledAt: '', address: '', description: '' });
+    setDateStr('');
+    setTimeStr('');
+    setSvc(null);
+
+    if (initialProfessional) {
+      // Skip professional selection step
+      setPro(initialProfessional);
+      setStep('service');
+    } else {
+      setPro(null);
+      setStep('pro');
+      setLoadingPros(true);
+      professionalsApi.nearby(-12.0464, -77.0428, 30)
+        .then(setPros).catch(() => {}).finally(() => setLoadingPros(false));
+    }
+  }, [visible, initialProfessional]);
 
   const filtered = pros.filter(p =>
     p.userName.toLowerCase().includes(search.toLowerCase()) ||
@@ -165,16 +177,17 @@ export default function BookingWizard({ visible, onClose, onCreated }: Props) {
         {/* Step: Service */}
         {step === 'service' && pro && (
           <View style={s.stepBody}>
-            {/* Selected pro chip */}
             <View style={s.selectedPro}>
               <Avatar name={pro.userName} />
               <View style={{ flex: 1 }}>
                 <Text style={s.proName}>{pro.userName}</Text>
                 <Text style={s.proSpec}>{pro.specialty}</Text>
               </View>
-              <TouchableOpacity onPress={() => { setStep('pro'); setPro(null); }}>
-                <Text style={s.changeTxt}>Cambiar</Text>
-              </TouchableOpacity>
+              {!initialProfessional && (
+                <TouchableOpacity onPress={() => { setStep('pro'); setPro(null); }}>
+                  <Text style={s.changeTxt}>Cambiar</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <Text style={s.sectionLabel}>Elige el servicio</Text>
             {pro.services.length === 0 ? (
@@ -212,7 +225,6 @@ export default function BookingWizard({ visible, onClose, onCreated }: Props) {
         {/* Step: Details */}
         {step === 'details' && pro && svc && (
           <View style={[s.stepBody, { padding: 20 }]}>
-            {/* Summary chips */}
             <View style={s.chipsRow}>
               <View style={[s.chip, s.chipPurple]}><Text style={s.chipText}>👤 {pro.userName}</Text></View>
               <View style={[s.chip, s.chipGreen]}><Text style={s.chipText}>🔧 {svc.name}</Text></View>
