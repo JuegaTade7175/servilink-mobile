@@ -25,7 +25,7 @@
     "@react-navigation/stack": "^7.10.3",
     "axios": "^1.6.7",
     "babel-preset-expo": "~54.0.10",
-    "expo": "~54.0.34",
+    "expo": "~56.0.12",
     "expo-audio": "~1.1.1",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
