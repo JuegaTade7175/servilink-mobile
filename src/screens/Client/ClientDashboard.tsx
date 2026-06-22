@@ -6,9 +6,11 @@ import ClientProfessionalList from './ClientProfessionalList';
 import ClientBookings from './ClientBookings';
 import ClientProfile from './ClientProfile';
 import ChatListScreen from '../Shared/ChatListScreen';
+import MapScreen from '../Shared/MapScreen';
 
 // ─── Escenas estáticas ───────────────────────────────────────────────────────
 const ProfessionalsRoute = () => <ClientProfessionalList />;
+const MapRoute = () => <MapScreen />;
 const BookingsRoute = () => <ClientBookings />;
 const ChatRoute = () => <ChatListScreen />;
 
@@ -26,6 +28,12 @@ const ROUTES = [
     title: 'Buscar',
     focusedIcon: 'magnify',
     unfocusedIcon: 'magnify',
+  },
+  {
+    key: 'map',
+    title: 'Mapa',
+    focusedIcon: 'map',
+    unfocusedIcon: 'map-outline',
   },
   {
     key: 'bookings',
@@ -101,6 +109,8 @@ export default function ClientDashboard() {
     switch (route.key) {
       case 'professionals':
         return <ProfessionalsRoute />;
+      case 'map':
+        return <MapRoute />;
       case 'bookings':
         return <BookingsRoute />;
       case 'chat':

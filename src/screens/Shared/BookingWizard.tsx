@@ -3,7 +3,9 @@ import {
   View, Text, StyleSheet, Modal, TouchableOpacity, TextInput,
   FlatList, ActivityIndicator, Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { professionalsApi, bookingsApi } from '../../api';
+import { mapApi } from '../../api';
 import type { Professional, Booking, ServiceItem } from '../../types';
 
 interface Props {
@@ -17,7 +19,7 @@ interface Props {
 type Step = 'pro' | 'service' | 'details';
 
 function Avatar({ name }: { name: string }) {
-  const COLORS = ['#6c63ff','#ec4899','#14b8a6','#f59e0b','#8b5cf6','#10b981'];
+  const COLORS = ['#6c63ff', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#10b981'];
   const color = COLORS[name.charCodeAt(0) % COLORS.length];
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   return (
@@ -43,6 +45,9 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
   const [form, setForm] = useState({ scheduledAt: '', address: '', description: '' });
   const [dateStr, setDateStr] = useState('');
   const [timeStr, setTimeStr] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [tempDate, setTempDate] = useState<Date>(new Date());
 
   useEffect(() => {
     if (!visible) return;
@@ -62,7 +67,7 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
       setStep('pro');
       setLoadingPros(true);
       professionalsApi.nearby(-12.0464, -77.0428, 30)
-        .then(setPros).catch(() => {}).finally(() => setLoadingPros(false));
+        .then(setPros).catch(() => { }).finally(() => setLoadingPros(false));
     }
   }, [visible, initialProfessional]);
 
@@ -117,7 +122,7 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
               <React.Fragment key={label}>
                 <View style={s.stepItem}>
                   <View style={[s.stepCircle,
-                    done ? s.stepDone : active ? s.stepActive : s.stepFuture]}>
+                  done ? s.stepDone : active ? s.stepActive : s.stepFuture]}>
                     <Text style={[s.stepNum, (done || active) ? s.stepNumLight : s.stepNumDark]}>
                       {done ? '✓' : i + 1}
                     </Text>
@@ -234,26 +239,47 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
             </View>
 
             <Text style={s.fieldLabel}>FECHA (YYYY-MM-DD) *</Text>
-            <TextInput
-              style={s.input}
-              value={dateStr}
-              onChangeText={setDateStr}
-              placeholder="2027-06-20"
-              placeholderTextColor="#9ca3af"
-              keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'default'}
-              maxLength={10}
-            />
+            <TouchableOpacity onPress={() => { setTempDate(new Date()); setShowDatePicker(true); }} style={[s.input, { justifyContent: 'center' }]}>
+              <Text style={{ color: dateStr ? '#111827' : '#9ca3af' }}>{dateStr || 'Selecciona fecha'}</Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={tempDate}
+                mode="date"
+                display="default"
+                onChange={(e, selected) => {
+                  setShowDatePicker(false);
+                  if (selected) {
+                    const d = selected;
+                    const iso = d.toISOString().slice(0, 10);
+                    setDateStr(iso);
+                  }
+                }}
+              />
+            )}
 
             <Text style={[s.fieldLabel, { marginTop: 12 }]}>HORA (HH:MM) *</Text>
-            <TextInput
-              style={s.input}
-              value={timeStr}
-              onChangeText={setTimeStr}
-              placeholder="10:00"
-              placeholderTextColor="#9ca3af"
-              keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'default'}
-              maxLength={5}
-            />
+            <TouchableOpacity onPress={() => { setTempDate(new Date()); setShowTimePicker(true); }} style={[s.input, { justifyContent: 'center' }]}>
+              <Text style={{ color: timeStr ? '#111827' : '#9ca3af' }}>{timeStr || 'Selecciona hora'}</Text>
+            </TouchableOpacity>
+
+            {showTimePicker && (
+              <DateTimePicker
+                value={tempDate}
+                mode="time"
+                display="default"
+                onChange={(e, selected) => {
+                  setShowTimePicker(false);
+                  if (selected) {
+                    const d = selected;
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const mm = String(d.getMinutes()).padStart(2, '0');
+                    setTimeStr(`${hh}:${mm}`);
+                  }
+                }}
+              />
+            )}
 
             <Text style={[s.fieldLabel, { marginTop: 12 }]}>DIRECCIÓN *</Text>
             <TextInput
@@ -263,6 +289,21 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
               placeholder="Av. Larco 345, Miraflores"
               placeholderTextColor="#9ca3af"
             />
+            <TouchableOpacity style={{ marginTop: 8 }} onPress={async () => {
+              if (!form.address.trim()) return;
+              try {
+                const res = await mapApi.geocode(form.address.trim());
+                if (res?.length > 0) {
+                  // server may return array or single object
+                  const first = Array.isArray(res) ? res[0] : res;
+                  if (first?.formattedAddress) setForm(p => ({ ...p, address: first.formattedAddress }));
+                }
+              } catch {
+                // ignore
+              }
+            }}>
+              <Text style={{ color: '#6c63ff', fontWeight: '700' }}>Buscar dirección</Text>
+            </TouchableOpacity>
 
             <Text style={[s.fieldLabel, { marginTop: 12 }]}>DESCRIPCIÓN (OPCIONAL)</Text>
             <TextInput
@@ -364,8 +405,8 @@ const s = StyleSheet.create({
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
   chipPurple: { backgroundColor: '#ede9fe', borderColor: '#c4b5fd' },
-  chipGreen:  { backgroundColor: '#ecfdf5', borderColor: '#6ee7b7' },
-  chipAmber:  { backgroundColor: '#fffbeb', borderColor: '#fcd34d' },
+  chipGreen: { backgroundColor: '#ecfdf5', borderColor: '#6ee7b7' },
+  chipAmber: { backgroundColor: '#fffbeb', borderColor: '#fcd34d' },
   chipText: { fontSize: 12, fontWeight: '600', color: '#374151' },
   fieldLabel: { fontSize: 10, fontWeight: '700', color: '#6b7280', letterSpacing: 1, marginBottom: 6 },
   input: {

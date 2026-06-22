@@ -5,14 +5,15 @@ import {
 } from 'react-native';
 import { Avatar, Card, Paragraph, Searchbar } from 'react-native-paper';
 import * as Location from 'expo-location';
-import { professionalsApi } from '../../api';
+import { professionalsApi, mapApi } from '../../api';
 import type { Professional, Booking } from '../../types';
 import AvailabilityScreen from '../Shared/AvailabilityScreen';
 import BookingWizard from '../Shared/BookingWizard';
 import BookingDetailScreen from '../Shared/BookingDetailScreen';
+import ProfessionalDetail from '../Shared/ProfessionalDetail';
 
 const LIMA_FALLBACK = {
-  latitude:  -12.0464,
+  latitude: -12.0464,
   longitude: -77.0428,
   label: 'Usando Lima como referencia. Activa permisos de ubicación para ver resultados cercanos.',
 };
@@ -29,6 +30,7 @@ export default function ClientProfessionalList() {
   const [showWizard, setShowWizard] = useState(false);
   const [wizardPro, setWizardPro] = useState<Professional | null>(null);
   const [createdBooking, setCreatedBooking] = useState<Booking | null>(null);
+  const [selectedProId, setSelectedProId] = useState<number | null>(null);
 
   const resolveLocation = async () => {
     try {
@@ -51,12 +53,23 @@ export default function ClientProfessionalList() {
     try {
       const loc = await resolveLocation();
       const data = await professionalsApi.nearby(loc.latitude, loc.longitude, 50);
-      setProfessionals(data);
+      // Try to enrich with geo points (distance) from mapApi
+      try {
+        const gp = await mapApi.geoPoints(loc.latitude, loc.longitude, 50);
+        const byId = new Map(gp.map(x => [x.professionalId, x] as [number, any]));
+        const enriched = data.map(d => {
+          const g = byId.get(d.id);
+          return { ...d, distanceKm: d.distanceKm ?? g?.distanceKm ?? d.distanceKm };
+        });
+        setProfessionals(enriched);
+      } catch {
+        setProfessionals(data);
+      }
     } catch {
       try {
         const data = await professionalsApi.nearby(LIMA_FALLBACK.latitude, LIMA_FALLBACK.longitude, 50);
         setProfessionals(data);
-      } catch {}
+      } catch { }
     }
     setLoading(false);
     setRefreshing(false);
@@ -97,7 +110,7 @@ export default function ClientProfessionalList() {
   };
 
   const renderItem = ({ item }: { item: Professional }) => (
-    <Card style={s.card} elevation={3}>
+    <Card style={s.card} elevation={3} onPress={() => setSelectedProId(item.id)}>
       <Card.Title
         title={item.userName}
         subtitle={item.specialty}
@@ -189,6 +202,9 @@ export default function ClientProfessionalList() {
         }}
         initialProfessional={wizardPro ?? undefined}
       />
+      {selectedProId && (
+        <ProfessionalDetail professionalId={selectedProId} visible={true} onClose={() => setSelectedProId(null)} />
+      )}
     </View>
   );
 }
@@ -201,11 +217,11 @@ const s = StyleSheet.create({
   card: { borderRadius: 14, backgroundColor: '#fff' },
   desc: { color: '#6b7280', fontSize: 13, marginBottom: 8 },
   metaRow: { flexDirection: 'row', gap: 14, alignItems: 'center', marginBottom: 8 },
-  price:    { fontWeight: '700', color: '#6c63ff', fontSize: 14 },
-  rating:   { color: '#f59e0b', fontSize: 13 },
-  dist:     { color: '#6b7280', fontSize: 12 },
+  price: { fontWeight: '700', color: '#6c63ff', fontSize: 14 },
+  rating: { color: '#f59e0b', fontSize: 13 },
+  dist: { color: '#6b7280', fontSize: 12 },
   verified: { color: '#10b981', fontWeight: '700', fontSize: 12, marginRight: 12 },
-  tagsRow:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   tag: {
     backgroundColor: '#f3f4f6', borderRadius: 12,
     paddingHorizontal: 10, paddingVertical: 4,
