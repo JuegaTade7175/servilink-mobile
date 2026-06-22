@@ -25,7 +25,6 @@ export default function MapScreen() {
                 }
                 setRegion({ latitude: loc.latitude, longitude: loc.longitude, latitudeDelta: 0.1, longitudeDelta: 0.1 });
                 const gp = await professionalsApi.nearby(loc.latitude, loc.longitude, 50);
-                // professionalsApi.nearby returns Professional[], map to GeoPoint-like
                 const gpoints = gp.map(p => ({
                     professionalId: p.id,
                     name: p.userName,
