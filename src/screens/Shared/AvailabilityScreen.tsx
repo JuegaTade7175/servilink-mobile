@@ -8,13 +8,13 @@ import { useAuth } from '../../context/AuthContext';
 import type { Availability, DayOfWeek } from '../../types';
 
 const DAYS: { value: DayOfWeek; label: string; short: string }[] = [
-  { value: 'MONDAY',    label: 'Lunes',      short: 'Lun' },
-  { value: 'TUESDAY',   label: 'Martes',     short: 'Mar' },
-  { value: 'WEDNESDAY', label: 'Miércoles',  short: 'Mié' },
-  { value: 'THURSDAY',  label: 'Jueves',     short: 'Jue' },
-  { value: 'FRIDAY',    label: 'Viernes',    short: 'Vie' },
-  { value: 'SATURDAY',  label: 'Sábado',     short: 'Sáb' },
-  { value: 'SUNDAY',    label: 'Domingo',    short: 'Dom' },
+  { value: 'MONDAY', label: 'Lunes', short: 'Lun' },
+  { value: 'TUESDAY', label: 'Martes', short: 'Mar' },
+  { value: 'WEDNESDAY', label: 'Miércoles', short: 'Mié' },
+  { value: 'THURSDAY', label: 'Jueves', short: 'Jue' },
+  { value: 'FRIDAY', label: 'Viernes', short: 'Vie' },
+  { value: 'SATURDAY', label: 'Sábado', short: 'Sáb' },
+  { value: 'SUNDAY', label: 'Domingo', short: 'Dom' },
 ];
 
 function fmt12(t: string) {
@@ -23,7 +23,6 @@ function fmt12(t: string) {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
-// Simple time picker using hour/minute selectors
 function TimePicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [h, m] = value.split(':').map(Number);
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -96,7 +95,7 @@ export default function AvailabilityScreen({
     try {
       const data = await availabilityApi.getByProfessional(professionalId);
       setSlots(data);
-    } catch {}
+    } catch { }
     setLoading(false);
     setRefreshing(false);
   }, [professionalId]);
@@ -194,7 +193,7 @@ export default function AvailabilityScreen({
 
   return (
     <View style={s.container}>
-      {/* Header */}
+      { }
       <View style={s.header}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
           <Text style={s.backText}>←</Text>
@@ -236,7 +235,7 @@ export default function AvailabilityScreen({
         />
       )}
 
-      {/* Create / Edit Modal */}
+      { }
       <Modal visible={showModal} animationType="slide" presentationStyle="pageSheet">
         <View style={m.container}>
           <View style={m.header}>
@@ -401,5 +400,4 @@ const m = StyleSheet.create({
   saveText: { fontSize: 15, fontWeight: '700', color: '#fff' },
 });
 
-// need Platform for fontFamily
 import { Platform } from 'react-native';

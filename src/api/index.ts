@@ -9,8 +9,7 @@ import type {
   Availability, DayOfWeek,
 } from '../types';
 
-// Usamos variables de entorno de Expo (prefijo EXPO_PUBLIC_)
-const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8081'; 
+const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8081';
 
 const api = axios.create({
   baseURL,

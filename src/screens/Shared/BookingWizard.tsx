@@ -12,7 +12,6 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onCreated: (b: Booking) => void;
-  /** Pre-select a professional and skip straight to service step */
   initialProfessional?: Professional;
 }
 
@@ -59,7 +58,6 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
     setSvc(null);
 
     if (initialProfessional) {
-      // Skip professional selection step
       setPro(initialProfessional);
       setStep('service');
     } else {
@@ -106,14 +104,14 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <View style={s.container}>
-        {/* Header */}
+        { }
         <View style={s.header}>
           <TouchableOpacity onPress={onClose}><Text style={s.close}>✕</Text></TouchableOpacity>
           <Text style={s.headerTitle}>Nueva reserva</Text>
           <View style={{ width: 32 }} />
         </View>
 
-        {/* Stepper */}
+        { }
         <View style={s.stepper}>
           {STEP_LABELS.map((label, i) => {
             const done = i < currentIdx;
@@ -137,7 +135,7 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
           })}
         </View>
 
-        {/* Step: Professional */}
+        { }
         {step === 'pro' && (
           <View style={s.stepBody}>
             <TextInput
@@ -179,7 +177,7 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
           </View>
         )}
 
-        {/* Step: Service */}
+        { }
         {step === 'service' && pro && (
           <View style={s.stepBody}>
             <View style={s.selectedPro}>
@@ -227,7 +225,7 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
           </View>
         )}
 
-        {/* Step: Details */}
+        { }
         {step === 'details' && pro && svc && (
           <View style={[s.stepBody, { padding: 20 }]}>
             <View style={s.chipsRow}>
@@ -294,12 +292,10 @@ export default function BookingWizard({ visible, onClose, onCreated, initialProf
               try {
                 const res = await mapApi.geocode(form.address.trim());
                 if (res?.length > 0) {
-                  // server may return array or single object
                   const first = Array.isArray(res) ? res[0] : res;
                   if (first?.formattedAddress) setForm(p => ({ ...p, address: first.formattedAddress }));
                 }
               } catch {
-                // ignore
               }
             }}>
               <Text style={{ color: '#6c63ff', fontWeight: '700' }}>Buscar dirección</Text>

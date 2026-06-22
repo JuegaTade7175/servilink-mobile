@@ -55,7 +55,7 @@ export default function ChatScreen({ booking, onBack }: Props) {
 
   useEffect(() => {
     fetchMessages(false).then(() => {
-      messagesApi.markAsRead(booking.id).catch(() => {});
+      messagesApi.markAsRead(booking.id).catch(() => { });
     });
   }, [fetchMessages, booking.id]);
 
@@ -121,7 +121,7 @@ export default function ChatScreen({ booking, onBack }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
-      {/* Header */}
+      { }
       <View style={s.header}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
           <Text style={s.backText}>←</Text>

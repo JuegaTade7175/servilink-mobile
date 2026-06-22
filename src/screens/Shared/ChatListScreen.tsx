@@ -74,7 +74,6 @@ export default function ChatListScreen() {
       });
       setBookings(sorted);
 
-      // Load last messages and unread counts for active bookings
       const active = sorted.filter(b => b.status !== 'CANCELLED').slice(0, 10);
       const results = await Promise.all(
         active.map(b =>
@@ -91,7 +90,7 @@ export default function ChatListScreen() {
       }
       setLastMessages(lm);
       setUnreadCounts(uc);
-    } catch {}
+    } catch { }
     setLoading(false);
     setRefreshing(false);
   }, [userId]);
@@ -138,7 +137,7 @@ export default function ChatListScreen() {
       >
         <View style={s.avatarWrap}>
           <Avatar name={otherName} />
-          {/* Status dot */}
+          { }
           <View style={[s.statusDot, { backgroundColor: statusColor }]} />
         </View>
 
@@ -172,7 +171,7 @@ export default function ChatListScreen() {
 
   return (
     <View style={s.container}>
-      {/* Header */}
+      { }
       <View style={s.header}>
         <View>
           <Text style={s.title}>Chats</Text>
@@ -184,7 +183,7 @@ export default function ChatListScreen() {
         <View style={s.liveIndicator} />
       </View>
 
-      {/* Search */}
+      { }
       <View style={s.searchWrap}>
         <Text style={s.searchIcon}>🔍</Text>
         <TextInput
@@ -230,7 +229,7 @@ export default function ChatListScreen() {
         />
       )}
 
-      {/* Footer hint */}
+      { }
       <View style={s.footer}>
         <Text style={s.footerText}>💬 Actualización manual con pull-to-refresh</Text>
       </View>

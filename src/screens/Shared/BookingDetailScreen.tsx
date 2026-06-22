@@ -17,16 +17,16 @@ function fmtDateShort(iso: string) {
 }
 
 const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
-  PENDING:     { label: 'Pendiente',   bg: '#fef3c7', text: '#92400e' },
-  CONFIRMED:   { label: 'Confirmada',  bg: '#ede9fe', text: '#5b21b6' },
+  PENDING: { label: 'Pendiente', bg: '#fef3c7', text: '#92400e' },
+  CONFIRMED: { label: 'Confirmada', bg: '#ede9fe', text: '#5b21b6' },
   IN_PROGRESS: { label: 'En progreso', bg: '#ede9fe', text: '#7c3aed' },
-  COMPLETED:   { label: 'Completada',  bg: '#ecfdf5', text: '#065f46' },
-  CANCELLED:   { label: 'Cancelada',   bg: '#fee2e2', text: '#991b1b' },
+  COMPLETED: { label: 'Completada', bg: '#ecfdf5', text: '#065f46' },
+  CANCELLED: { label: 'Cancelada', bg: '#fee2e2', text: '#991b1b' },
 };
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string; desc: string }[] = [
-  { value: 'CARD',          label: 'Tarjeta',       icon: '💳', desc: 'Visa, Mastercard, Amex' },
-  { value: 'YAPE',          label: 'Yape',          icon: '📱', desc: 'Pago con QR instantáneo' },
+  { value: 'CARD', label: 'Tarjeta', icon: '💳', desc: 'Visa, Mastercard, Amex' },
+  { value: 'YAPE', label: 'Yape', icon: '📱', desc: 'Pago con QR instantáneo' },
   { value: 'BANK_TRANSFER', label: 'Transferencia', icon: '🏦', desc: 'BCP, Interbank, BBVA' },
 ];
 
@@ -44,19 +44,16 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
   const [loadingExtra, setLoadingExtra] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
-  // Payment modal
   const [showPay, setShowPay] = useState(false);
   const [payMethod, setPayMethod] = useState<PaymentMethod>('CARD');
   const [payAmount, setPayAmount] = useState('');
   const [payLoading, setPayLoading] = useState(false);
 
-  // Confirmation modal
   const [showConf, setShowConf] = useState(false);
   const [confCode, setConfCode] = useState('');
   const [confLoading, setConfLoading] = useState(false);
   const [genLoading, setGenLoading] = useState(false);
 
-  // Review modal
   const [showReview, setShowReview] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -143,13 +140,13 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
 
   type ActionDef = { label: string; icon: string; status: string; color: string };
   const actions: ActionDef[] = ({
-    PENDING:     [
+    PENDING: [
       { label: 'Confirmar', icon: '✅', status: 'CONFIRMED', color: '#10b981' },
-      { label: 'Cancelar',  icon: '❌', status: 'CANCELLED', color: '#ef4444' },
+      { label: 'Cancelar', icon: '❌', status: 'CANCELLED', color: '#ef4444' },
     ],
-    CONFIRMED:   [
-      { label: 'Iniciar',  icon: '🔧', status: 'IN_PROGRESS', color: '#6c63ff' },
-      { label: 'Cancelar', icon: '❌', status: 'CANCELLED',   color: '#ef4444' },
+    CONFIRMED: [
+      { label: 'Iniciar', icon: '🔧', status: 'IN_PROGRESS', color: '#6c63ff' },
+      { label: 'Cancelar', icon: '❌', status: 'CANCELLED', color: '#ef4444' },
     ],
     IN_PROGRESS: [
       { label: 'Completar', icon: '🎉', status: 'COMPLETED', color: '#10b981' },
@@ -164,7 +161,7 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
 
   return (
     <View style={s.container}>
-      {/* Header */}
+      { }
       <View style={s.header}>
         <TouchableOpacity onPress={onBack} style={s.backBtn}>
           <Text style={s.backText}>←</Text>
@@ -179,16 +176,16 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
       </View>
 
       <ScrollView contentContainerStyle={s.body}>
-        {/* Info grid */}
+        { }
         <View style={s.grid}>
           <Field label="👤 Profesional" value={booking.professionalName} />
-          <Field label="👥 Cliente"     value={booking.clientName} />
-          <Field label="📅 Fecha"       value={fmtDate(booking.scheduledAt)} wide />
-          <Field label="📍 Dirección"   value={booking.address} wide />
+          <Field label="👥 Cliente" value={booking.clientName} />
+          <Field label="📅 Fecha" value={fmtDate(booking.scheduledAt)} wide />
+          <Field label="📍 Dirección" value={booking.address} wide />
           {booking.description && <Field label="📝 Descripción" value={booking.description} wide />}
         </View>
 
-        {/* Status actions */}
+        { }
         {actions.length > 0 && (
           <Section title="Cambiar estado">
             <View style={s.actionsRow}>
@@ -202,16 +199,16 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
                   {updatingStatus === a.status
                     ? <ActivityIndicator size="small" color={a.color} />
                     : <>
-                        <Text style={s.actionIcon}>{a.icon}</Text>
-                        <Text style={[s.actionLabel, { color: a.color }]}>{a.label}</Text>
-                      </>}
+                      <Text style={s.actionIcon}>{a.icon}</Text>
+                      <Text style={[s.actionLabel, { color: a.color }]}>{a.label}</Text>
+                    </>}
                 </TouchableOpacity>
               ))}
             </View>
           </Section>
         )}
 
-        {/* Payment */}
+        { }
         <Section title="💳 Pago">
           {loadingExtra ? <ActivityIndicator size="small" color="#6c63ff" /> :
             payment ? (
@@ -238,7 +235,7 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
             )}
         </Section>
 
-        {/* Confirmation */}
+        { }
         <Section title="🔐 Confirmación de cita">
           {loadingExtra ? <ActivityIndicator size="small" color="#6c63ff" /> :
             <View style={s.emptyRow}>
@@ -263,13 +260,13 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
             </View>}
         </Section>
 
-        {/* Review */}
+        { }
         {booking.status === 'COMPLETED' && (
           <Section title="⭐ Reseña">
             {existingReview ? (
               <View style={s.reviewCard}>
                 <View style={s.starsRow}>
-                  {[1,2,3,4,5].map(i => (
+                  {[1, 2, 3, 4, 5].map(i => (
                     <Text key={i} style={[s.star, i <= existingReview.rating ? s.starFilled : s.starEmpty]}>★</Text>
                   ))}
                   <Text style={s.reviewDate}>{fmtDateShort(existingReview.createdAt)}</Text>
@@ -288,7 +285,7 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
         )}
       </ScrollView>
 
-      {/* ── PAYMENT MODAL ── */}
+      { }
       <Modal visible={showPay} animationType="slide" presentationStyle="pageSheet">
         <View style={m.container}>
           <View style={m.header}>
@@ -332,7 +329,7 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
         </View>
       </Modal>
 
-      {/* ── CONFIRMATION MODAL ── */}
+      { }
       <Modal visible={showConf} animationType="slide" presentationStyle="pageSheet">
         <View style={m.container}>
           <View style={m.header}>
@@ -384,7 +381,7 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
         </View>
       </Modal>
 
-      {/* ── REVIEW MODAL ── */}
+      { }
       <Modal visible={showReview} animationType="slide" presentationStyle="pageSheet">
         <View style={m.container}>
           <View style={m.header}>
@@ -394,7 +391,7 @@ export default function BookingDetailScreen({ booking: initialBooking, onBack, o
           <ScrollView contentContainerStyle={m.body}>
             <Text style={m.blockText}>¿Cómo calificarías a {booking.professionalName}?</Text>
             <View style={m.starsRow}>
-              {[1,2,3,4,5].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <TouchableOpacity key={i} onPress={() => setRating(i)}>
                   <Text style={[m.ratingStar, i <= rating ? m.ratingStarFilled : m.ratingStarEmpty]}>★</Text>
                 </TouchableOpacity>

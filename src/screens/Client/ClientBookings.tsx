@@ -10,20 +10,20 @@ import BookingWizard from '../Shared/BookingWizard';
 import ChatScreen from '../Shared/ChatScreen';
 
 const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
-  PENDING:     { label: 'Pendiente',   bg: '#fef3c7', text: '#92400e' },
-  CONFIRMED:   { label: 'Confirmada',  bg: '#ede9fe', text: '#5b21b6' },
+  PENDING: { label: 'Pendiente', bg: '#fef3c7', text: '#92400e' },
+  CONFIRMED: { label: 'Confirmada', bg: '#ede9fe', text: '#5b21b6' },
   IN_PROGRESS: { label: 'En progreso', bg: '#dbeafe', text: '#1e40af' },
-  COMPLETED:   { label: 'Completada',  bg: '#ecfdf5', text: '#065f46' },
-  CANCELLED:   { label: 'Cancelada',   bg: '#fee2e2', text: '#991b1b' },
+  COMPLETED: { label: 'Completada', bg: '#ecfdf5', text: '#065f46' },
+  CANCELLED: { label: 'Cancelada', bg: '#fee2e2', text: '#991b1b' },
 };
 
 const FILTERS: { value: BookingStatus | 'ALL'; label: string }[] = [
-  { value: 'ALL',         label: 'Todas' },
-  { value: 'PENDING',     label: 'Pendientes' },
-  { value: 'CONFIRMED',   label: 'Confirmadas' },
+  { value: 'ALL', label: 'Todas' },
+  { value: 'PENDING', label: 'Pendientes' },
+  { value: 'CONFIRMED', label: 'Confirmadas' },
   { value: 'IN_PROGRESS', label: 'En progreso' },
-  { value: 'COMPLETED',   label: 'Completadas' },
-  { value: 'CANCELLED',   label: 'Canceladas' },
+  { value: 'COMPLETED', label: 'Completadas' },
+  { value: 'CANCELLED', label: 'Canceladas' },
 ];
 
 function fmtDate(iso: string) {
@@ -48,7 +48,7 @@ export default function ClientBookings() {
       setBookings(data.sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       ));
-    } catch {}
+    } catch { }
     setLoading(false);
     setRefreshing(false);
   }, []);
@@ -66,7 +66,6 @@ export default function ClientBookings() {
     setSelected(b);
   };
 
-  // Sub-screens
   if (chatBooking) return <ChatScreen booking={chatBooking} onBack={() => setChatBooking(null)} />;
   if (selected) return (
     <BookingDetailScreen
@@ -93,7 +92,7 @@ export default function ClientBookings() {
           <Text style={s.meta}>📅 {fmtDate(item.scheduledAt)}</Text>
           <Text style={s.meta} numberOfLines={1}>📍 {item.address.slice(0, 28)}{item.address.length > 28 ? '…' : ''}</Text>
         </View>
-        {/* Chat shortcut */}
+        { }
         {item.status !== 'CANCELLED' && (
           <TouchableOpacity
             style={s.chatBtn}
@@ -108,7 +107,7 @@ export default function ClientBookings() {
 
   return (
     <View style={s.container}>
-      {/* Header */}
+      { }
       <View style={s.header}>
         <View>
           <Text style={s.title}>Mis Reservas</Text>
@@ -119,7 +118,7 @@ export default function ClientBookings() {
         </TouchableOpacity>
       </View>
 
-      {/* Filter tabs */}
+      { }
       <View>
         <FlatList
           horizontal

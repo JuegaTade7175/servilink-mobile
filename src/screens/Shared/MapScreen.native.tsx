@@ -37,7 +37,6 @@ export default function MapScreen() {
                 } as GeoPoint));
                 setPoints(gpoints);
             } catch (e) {
-                // ignore
             } finally {
                 setLoading(false);
             }

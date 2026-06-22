@@ -25,7 +25,6 @@ export default function ClientProfessionalList() {
   const [search, setSearch] = useState('');
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
 
-  // Sub-screen state
   const [viewingAvail, setViewingAvail] = useState<{ id: number; name: string } | null>(null);
   const [showWizard, setShowWizard] = useState(false);
   const [wizardPro, setWizardPro] = useState<Professional | null>(null);
@@ -53,7 +52,6 @@ export default function ClientProfessionalList() {
     try {
       const loc = await resolveLocation();
       const data = await professionalsApi.nearby(loc.latitude, loc.longitude, 50);
-      // Try to enrich with geo points (distance) from mapApi
       try {
         const gp = await mapApi.geoPoints(loc.latitude, loc.longitude, 50);
         const byId = new Map(gp.map(x => [x.professionalId, x] as [number, any]));
@@ -82,7 +80,6 @@ export default function ClientProfessionalList() {
     p.specialty.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Sub-screens
   if (viewingAvail) {
     return (
       <AvailabilityScreen
@@ -191,7 +188,7 @@ export default function ClientProfessionalList() {
         />
       )}
 
-      {/* Booking wizard — pre-selects the professional */}
+      { }
       <BookingWizard
         visible={showWizard}
         onClose={() => { setShowWizard(false); setWizardPro(null); }}

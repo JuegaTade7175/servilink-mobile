@@ -46,7 +46,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
           certifications: p.certifications || '',
         });
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -122,7 +122,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
 
   return (
     <ScrollView style={s.container} contentContainerStyle={s.scroll}>
-      {/* ── Botón notificaciones con badge ── */}
+      { }
       {onShowNotifs && (
         <TouchableOpacity style={s.notifBtn} onPress={onShowNotifs}>
           <Text style={s.notifIcon}>🔔</Text>
@@ -138,7 +138,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
         </TouchableOpacity>
       )}
 
-      {/* ── Avatar ── */}
+      { }
       <View style={s.avatarSection}>
         <View style={[s.avatarCircle, { backgroundColor: avatarColor }]}>
           <Text style={s.avatarInitials}>{initials}</Text>
@@ -152,7 +152,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
         )}
       </View>
 
-      {/* ── Stats ── */}
+      { }
       {profile && (
         <View style={s.statsRow}>
           <StatBox label="Rating" value={`★ ${(profile.averageRating ?? 0).toFixed(1)}`} />
@@ -161,7 +161,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
         </View>
       )}
 
-      {/* ── Perfil profesional ── */}
+      { }
       <View style={s.card}>
         <View style={s.cardHeader}>
           <Text style={s.cardTitle}>Perfil Profesional</Text>
@@ -258,7 +258,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
         )}
       </View>
 
-      {/* ── Foto de perfil ── */}
+      { }
       <View style={s.card}>
         <Text style={s.cardTitle}>📸 Foto de perfil</Text>
         <Text style={s.photoHint}>
@@ -286,7 +286,7 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
         </TouchableOpacity>
       </View>
 
-      {/* ── Cerrar sesión ── */}
+      { }
       <TouchableOpacity style={s.logoutBtn} onPress={logout}>
         <Text style={s.logoutText}>🚪 Cerrar sesión</Text>
       </TouchableOpacity>
@@ -294,7 +294,6 @@ export default function ProfessionalProfile({ onShowNotifs, unreadCount = 0 }: P
   );
 }
 
-// ─── Sub-componentes ─────────────────────────────────────────────────────────
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
@@ -401,7 +400,6 @@ const s = StyleSheet.create({
   scroll: { padding: 16, gap: 16 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  // Notificaciones
   notifBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -427,7 +425,6 @@ const s = StyleSheet.create({
   notifBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
   notifChevron: { fontSize: 20, color: '#9ca3af' },
 
-  // Avatar
   avatarSection: { alignItems: 'center', gap: 6, paddingVertical: 8 },
   avatarCircle: {
     width: 84,
@@ -452,10 +449,8 @@ const s = StyleSheet.create({
   },
   verifiedText: { fontSize: 12, color: '#059669', fontWeight: '700' },
 
-  // Stats
   statsRow: { flexDirection: 'row', gap: 10 },
 
-  // Card
   card: {
     backgroundColor: '#fff',
     borderRadius: 14,
@@ -512,7 +507,6 @@ const s = StyleSheet.create({
     color: '#1f2937',
   },
 
-  // Logout
   logoutBtn: {
     backgroundColor: '#fee2e2',
     borderRadius: 14,

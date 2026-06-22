@@ -8,20 +8,17 @@ import ClientProfile from './ClientProfile';
 import ChatListScreen from '../Shared/ChatListScreen';
 import MapScreen from '../Shared/MapScreen';
 
-// ─── Escenas estáticas ───────────────────────────────────────────────────────
 const ProfessionalsRoute = () => <ClientProfessionalList />;
 const MapRoute = () => <MapScreen />;
 const BookingsRoute = () => <ClientBookings />;
 const ChatRoute = () => <ChatListScreen />;
 
-// Profile recibe props a través de wrapper
 const ProfileRoute = ({
   unreadNotifs,
 }: {
   unreadNotifs: number;
 }) => <ClientProfile unreadNotifs={unreadNotifs} />;
 
-// ─── Rutas declaradas fuera del componente ───────────────────────────────────
 const ROUTES = [
   {
     key: 'professionals',
@@ -60,23 +57,19 @@ export default function ClientDashboard() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
 
-  // Polling de mensajes no leídos (cada 10s — el chat ya tiene 3s interno)
   const fetchUnreadMessages = useCallback(async () => {
     try {
       const data = await messagesApi.unreadCount();
       setUnreadMessages(data.unreadCount);
     } catch {
-      // silencioso
     }
   }, []);
 
-  // Polling de notificaciones no leídas (cada 30s)
   const fetchUnreadNotifs = useCallback(async () => {
     try {
       const data = await notificationsApi.unreadCount();
       setUnreadNotifs(data.unreadCount);
     } catch {
-      // silencioso
     }
   }, []);
 
@@ -93,11 +86,9 @@ export default function ClientDashboard() {
     };
   }, [fetchUnreadMessages, fetchUnreadNotifs]);
 
-  // Cuando el usuario entra al tab Chat, reseteamos el badge local
   const handleIndexChange = (newIndex: number) => {
     setIndex(newIndex);
     if (ROUTES[newIndex]?.key === 'chat') {
-      // El ChatListScreen marcará como leídos, refrescamos tras un momento
       setTimeout(fetchUnreadMessages, 2000);
     }
     if (ROUTES[newIndex]?.key === 'profile') {
@@ -122,7 +113,6 @@ export default function ClientDashboard() {
     }
   };
 
-  // Badge numérico sobre los tabs
   const renderBadge = ({ route }: { route: { key: string } }) => {
     if (route.key === 'chat' && unreadMessages > 0) {
       return (

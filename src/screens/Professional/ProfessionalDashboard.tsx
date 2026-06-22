@@ -10,7 +10,6 @@ import ProfessionalOnboardingScreen from './ProfessionalOnboardingScreen';
 import AvailabilityScreen from '../Shared/AvailabilityScreen';
 import NotificationsScreen from '../Shared/NotificationsScreen';
 
-// ─── Rutas declaradas FUERA del componente para evitar re-creación ───────────
 const ROUTES = [
   {
     key: 'bookings',
@@ -35,7 +34,6 @@ const ROUTES = [
 export default function ProfessionalDashboard() {
   const { role } = useAuth();
 
-  // ─── Todos los hooks ANTES de cualquier return condicional ───────────────
   const [index, setIndex] = useState(0);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [loadingProf, setLoadingProf] = useState(true);
@@ -43,7 +41,6 @@ export default function ProfessionalDashboard() {
   const [showNotifs, setShowNotifs] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Carga el perfil profesional
   useEffect(() => {
     if (role !== 'PROFESSIONAL') {
       setNeedsOnboarding(false);
@@ -60,13 +57,11 @@ export default function ProfessionalDashboard() {
       .finally(() => setLoadingProf(false));
   }, [role]);
 
-  // Polling de notificaciones no leídas (cada 30s)
   const fetchUnread = useCallback(async () => {
     try {
       const data = await notificationsApi.unreadCount();
       setUnreadCount(data.unreadCount);
     } catch {
-      // silencioso
     }
   }, []);
 
@@ -76,7 +71,6 @@ export default function ProfessionalDashboard() {
     return () => clearInterval(id);
   }, [fetchUnread]);
 
-  // ─── Returns condicionales DESPUÉS de todos los hooks ───────────────────
   if (loadingProf) {
     return (
       <View style={s.centered}>
@@ -90,7 +84,7 @@ export default function ProfessionalDashboard() {
       <ProfessionalOnboardingScreen
         onCompleted={() => {
           setNeedsOnboarding(false);
-          professionalsApi.me().then(setProfessional).catch(() => {});
+          professionalsApi.me().then(setProfessional).catch(() => { });
         }}
       />
     );
@@ -101,13 +95,12 @@ export default function ProfessionalDashboard() {
       <NotificationsScreen
         onBack={() => {
           setShowNotifs(false);
-          fetchUnread(); // refresca el badge al volver
+          fetchUnread();
         }}
       />
     );
   }
 
-  // ─── Render de escenas ───────────────────────────────────────────────────
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
       case 'bookings':
@@ -145,7 +138,6 @@ export default function ProfessionalDashboard() {
     }
   };
 
-  // Badge de notificaciones sobre el tab de perfil
   const renderBadge = ({ route }: { route: { key: string } }) => {
     if (route.key === 'profile' && unreadCount > 0) {
       return (

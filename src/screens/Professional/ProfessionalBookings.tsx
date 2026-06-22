@@ -9,11 +9,11 @@ import BookingDetailScreen from '../Shared/BookingDetailScreen';
 import ChatScreen from '../Shared/ChatScreen';
 
 const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
-  PENDING:     { label: 'Pendiente',   bg: '#fef3c7', text: '#92400e' },
-  CONFIRMED:   { label: 'Confirmada',  bg: '#ede9fe', text: '#5b21b6' },
+  PENDING: { label: 'Pendiente', bg: '#fef3c7', text: '#92400e' },
+  CONFIRMED: { label: 'Confirmada', bg: '#ede9fe', text: '#5b21b6' },
   IN_PROGRESS: { label: 'En progreso', bg: '#dbeafe', text: '#1e40af' },
-  COMPLETED:   { label: 'Completada',  bg: '#ecfdf5', text: '#065f46' },
-  CANCELLED:   { label: 'Cancelada',   bg: '#fee2e2', text: '#991b1b' },
+  COMPLETED: { label: 'Completada', bg: '#ecfdf5', text: '#065f46' },
+  CANCELLED: { label: 'Cancelada', bg: '#fee2e2', text: '#991b1b' },
 };
 
 const FILTERS = ['ALL', 'PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
@@ -45,7 +45,7 @@ export default function ProfessionalBookings({ professionalId }: Props) {
       setBookings(data.sort((a, b) =>
         new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
       ));
-    } catch {}
+    } catch { }
     setLoading(false);
     setRefreshing(false);
   }, [professionalId]);
@@ -107,7 +107,7 @@ export default function ProfessionalBookings({ professionalId }: Props) {
         <Text style={s.subtitle}>{bookings.length} total</Text>
       </View>
 
-      {/* Filter chips */}
+      { }
       <FlatList
         horizontal
         data={FILTERS}

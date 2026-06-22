@@ -9,7 +9,6 @@ import type { User } from '../../types';
 import NotificationsScreen from '../Shared/NotificationsScreen';
 
 interface Props {
-  /** Número de notificaciones no leídas para mostrar badge */
   unreadNotifs?: number;
 }
 
@@ -27,7 +26,6 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
       .me()
       .then((u) => setUser(u))
       .catch(() => {
-        // fallback con datos del contexto
         if (userName && userEmail) {
           setUser({
             id: userId ?? 0,
@@ -70,7 +68,7 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
           try {
             const updated = await usersApi.removePhoto();
             setUser(updated);
-          } catch {}
+          } catch { }
         },
       },
     ]);
@@ -101,7 +99,7 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={s.scroll}>
-      {/* ── Botón notificaciones con badge ── */}
+      { }
       <TouchableOpacity style={s.notifBtn} onPress={() => setShowNotifs(true)}>
         <Text style={s.notifIcon}>🔔</Text>
         <Text style={s.notifLabel}>Notificaciones</Text>
@@ -115,7 +113,7 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
         <Text style={s.notifChevron}>›</Text>
       </TouchableOpacity>
 
-      {/* ── Avatar ── */}
+      { }
       <View style={s.avatarSection}>
         {user?.profilePictureUrl ? (
           <View>
@@ -137,8 +135,8 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
           {user?.role === 'CLIENT'
             ? 'Cliente'
             : user?.role === 'PROFESSIONAL'
-            ? 'Profesional'
-            : (user?.role ?? '')}
+              ? 'Profesional'
+              : (user?.role ?? '')}
         </Text>
         {user?.createdAt && (
           <Text style={s.since}>
@@ -151,7 +149,7 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
         )}
       </View>
 
-      {/* ── Info fields ── */}
+      { }
       <View style={s.card}>
         <InfoRow icon="✉️" label="Email" value={displayEmail} />
         <View style={s.separator} />
@@ -166,7 +164,7 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
         <InfoRow icon="🆔" label="ID" value={`#${user?.id}`} />
       </View>
 
-      {/* ── Foto de perfil ── */}
+      { }
       <View style={s.card}>
         <Text style={s.cardTitle}>📸 Foto de perfil</Text>
         <Text style={s.cardSubtitle}>
@@ -196,7 +194,7 @@ export default function ClientProfile({ unreadNotifs = 0 }: Props) {
         </TouchableOpacity>
       </View>
 
-      {/* ── Cerrar sesión ── */}
+      { }
       <TouchableOpacity style={s.logoutBtn} onPress={logout}>
         <Text style={s.logoutText}>🚪 Cerrar sesión</Text>
       </TouchableOpacity>
@@ -241,7 +239,6 @@ const s = StyleSheet.create({
   scroll: { padding: 16, gap: 16 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  // Notificaciones
   notifBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -267,7 +264,6 @@ const s = StyleSheet.create({
   notifBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
   notifChevron: { fontSize: 20, color: '#9ca3af' },
 
-  // Avatar
   avatarSection: { alignItems: 'center', gap: 6, paddingVertical: 8 },
   avatar: {
     width: 88,
@@ -302,7 +298,6 @@ const s = StyleSheet.create({
   role: { fontSize: 14, color: '#6c63ff', fontWeight: '600' },
   since: { fontSize: 12, color: '#9ca3af' },
 
-  // Card
   card: {
     backgroundColor: '#fff',
     borderRadius: 14,
@@ -335,7 +330,6 @@ const s = StyleSheet.create({
   saveBtnDisabled: { opacity: 0.4 },
   saveBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 
-  // Logout
   logoutBtn: {
     backgroundColor: '#fee2e2',
     borderRadius: 14,
