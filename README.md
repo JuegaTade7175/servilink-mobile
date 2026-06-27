@@ -14,6 +14,12 @@ Proyecto desarrollado para el curso **CS 2031 Desarrollo Basado en Plataformas, 
 | Joel Rodrigo Eulogio Coquil | 202510112 |
 | Miguel Adrian Espinoza Arnero | 202320031 |
 
+## Usuarios de prueba
+
+| Email | Password | Rol |
+| --- | --- | --- |
+| `carlos@servilink.pe` | `password123` | CLIENT |
+
 ## Stack técnico
 
 - **React Native 0.81** y **React 19**.
@@ -168,12 +174,6 @@ La app está configurada en `app.json` con orientación vertical, paquete Androi
 - `ACCESS_FINE_LOCATION`
 
 En iOS se declara `NSLocationWhenInUseUsageDescription` para explicar el uso de ubicación al usuario.
-
-## Usuarios de prueba
-
-| Email | Password | Rol |
-| --- | --- | --- |
-| `carlos@servilink.pe` | `password123` | CLIENT |
 
 ## Estado del proyecto
 
