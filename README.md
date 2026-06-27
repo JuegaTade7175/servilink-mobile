@@ -174,7 +174,6 @@ En iOS se declara `NSLocationWhenInUseUsageDescription` para explicar el uso de 
 | Email | Password | Rol |
 | --- | --- | --- |
 | `carlos@servilink.pe` | `password123` | CLIENT |
-| `juan.rios@servilink.pe` | `password123` | PROFESSIONAL |
 
 ## Estado del proyecto
 
